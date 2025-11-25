@@ -24,22 +24,22 @@ jobs:
       - name: Debug File Structure
         run: ls -R
 
-      # INSTALL KOTLIN
-      - name: Setup Kotlin
-        uses: fwilhe2/setup-kotlin@v1
-        with:
-          version: 2.0.20 # or latest
-
-      # RUN THE SCRIPT
-      - name: Generate Compose Code
-        run: kotlin convert_tokens.main.kts
-
-      # CREATE PULL REQUEST
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "design: update compose theme"
-          title: "🎨 Update Design Tokens"
-          body: "Auto-generated updates from Figma via Kotlin Script."
-          branch: "design-updates"
+#      # INSTALL KOTLIN
+#      - name: Setup Kotlin
+#        uses: fwilhe2/setup-kotlin@v1
+#        with:
+#          version: 2.0.20 # or latest
+#
+#      # RUN THE SCRIPT
+#      - name: Generate Compose Code
+#        run: kotlin convert_tokens.main.kts
+#
+#      # CREATE PULL REQUEST
+#      - name: Create Pull Request
+#        uses: peter-evans/create-pull-request@v5
+#        with:
+#          token: ${{ secrets.GITHUB_TOKEN }}
+#          commit-message: "design: update compose theme"
+#          title: "🎨 Update Design Tokens"
+#          body: "Auto-generated updates from Figma via Kotlin Script."
+#          branch: "design-updates"
