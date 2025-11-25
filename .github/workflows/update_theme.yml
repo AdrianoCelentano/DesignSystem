@@ -20,6 +20,10 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v4
 
+          # ADD THIS DEBUG STEP
+      - name: Debug File Structure
+        run: ls -R
+
       # INSTALL KOTLIN
       - name: Setup Kotlin
         uses: fwilhe2/setup-kotlin@v1
