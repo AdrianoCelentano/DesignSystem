@@ -5,11 +5,15 @@
 
 import com.google.gson.Gson
 import com.google.gson.JsonParser
+import com.google.gson.annotations.SerializedName
 import java.io.File
 import java.io.FileReader
 
 // 1. DATA CLASS (For a single token)
-data class TokenValue(val value: String, val type: String)
+data class TokenValue(
+    @SerializedName("\$value") val value: String,
+    @SerializedName("\$type") val type: String
+)
 
 // 2. LOAD JSON
 val jsonFile = File("tokens.json")
@@ -39,15 +43,19 @@ if (rootObject.has("global")) {
 
         // Safety check: ensure the token is actually an object (not an array or string)
         if (tokenElement.isJsonObject) {
-            val token = gson.fromJson(tokenElement, TokenValue::class.java)
+            try {
+                val token = gson.fromJson(tokenElement, TokenValue::class.java)
 
-            if (token.type == "color") {
-                val hex = token.value.removePrefix("#")
-                val colorName = key.replaceFirstChar { it.uppercase() }
+                if (token.type == "color") {
+                    val hex = token.value.removePrefix("#")
+                    val colorName = key.replaceFirstChar { it.uppercase() }
 
-                // Ensure 8 chars for Color(0xFF...)
-                val fullHex = if (hex.length == 6) "FF$hex" else hex
-                sb.append("val $colorName = Color(0x$fullHex)\n")
+                    // Ensure 8 chars for Color(0xFF...)
+                    val fullHex = if (hex.length == 6) "FF$hex" else hex
+                    sb.append("val $colorName = Color(0x$fullHex)\n")
+                }
+            } catch (e: Exception) {
+                // Ignore parsing errors for non-matching objects
             }
         }
     }
