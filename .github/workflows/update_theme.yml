@@ -6,12 +6,12 @@ on:
       - 'tokens.json'
 
 # ADD THIS SECTION to enable the manual button
-workflow_dispatch:
-  inputs:
-    reason:
-      description: 'Why are you running this?'
-      required: false
-      default: 'Manual update'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are you running this?'
+        required: false
+        default: 'Manual update'
 
 jobs:
   update-theme:
