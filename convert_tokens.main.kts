@@ -60,88 +60,79 @@ if (rootObject.has("global")) {
                 // =================================================================================
                 // COLOR
                 // =================================================================================
-                when (type) {
-                    "color" if valueElement.isJsonPrimitive -> {
-                        try {
-                            val value = valueElement.asString
-                            val hex = value.removePrefix("#")
-                            val colorName = key.replaceFirstChar { it.uppercase() }
-                            val fullHex = if (hex.length == 6) "FF$hex" else hex
-
-                            val property = PropertySpec.builder(colorName, colorClassName)
-                                .initializer("%T(0x$fullHex)", colorClassName)
-                                .build()
-
-                            colorFileSpec.addProperty(property)
-                        } catch (e: Exception) {
-                            println("⚠️ Error processing color $key: ${e.message}")
-                        }
+                if (type == "color" && valueElement.isJsonPrimitive) {
+                    try {
+                        val value = valueElement.asString
+                        val hex = value.removePrefix("#")
+                        val colorName = key.replaceFirstChar { it.uppercase() }
+                        val fullHex = if (hex.length == 6) "FF$hex" else hex
+                        
+                        val property = PropertySpec.builder(colorName, colorClassName)
+                            .initializer("%T(0x$fullHex)", colorClassName)
+                            .build()
+                        
+                        colorFileSpec.addProperty(property)
+                    } catch (e: Exception) {
+                        println("⚠️ Error processing color $key: ${e.message}")
                     }
-                    // =================================================================================
-                    // TYPOGRAPHY
-                    // =================================================================================
-                    "typography" if valueElement.isJsonObject -> {
-                        try {
-                            val valueObj = valueElement.asJsonObject
-
-                            // Convert "Body large" -> "BodyLarge"
-                            val styleName = key.split(" ").joinToString("") {
-                                it.replaceFirstChar { c -> c.uppercase() }
-                            }
-
-                            // Helper to safely parse numbers from strings like "16", "16px", "0.5px"
-                            fun getFloat(k: String, default: Float): Float {
-                                if (!valueObj.has(k)) return default
-                                val s = valueObj.get(k).asString
-                                return s.replace("px", "").toFloatOrNull() ?: default
-                            }
-
-                            val fontSize = getFloat("fontSize", 14f)
-                            val lineHeight = getFloat("lineHeight", 20f)
-                            val letterSpacing = getFloat("letterSpacing", 0f)
-
-                            val property = PropertySpec.builder(styleName, textStyleClassName)
-                                .initializer(
-                                    "%T(\n  fontFamily = %T.Default,\n  fontSize = %L.%M,\n  lineHeight = %L.%M,\n  letterSpacing = %L.%M\n)",
-                                    textStyleClassName,
-                                    fontFamilyClassName,
-                                    fontSize, spMember,
-                                    lineHeight, spMember,
-                                    letterSpacing, spMember
-                                )
-                                .build()
-
-                            typeFileSpec.addProperty(property)
-
-                        } catch (e: Exception) {
-                            println("⚠️ Error processing typography $key: ${e.message}")
+                }
+                // =================================================================================
+                // TYPOGRAPHY
+                // =================================================================================
+                else if (type == "typography" && valueElement.isJsonObject) {
+                    try {
+                        val valueObj = valueElement.asJsonObject
+                        
+                        // Convert "Body large" -> "BodyLarge"
+                        val styleName = key.split(" ").joinToString("") { 
+                            it.replaceFirstChar { c -> c.uppercase() } 
                         }
+
+                        // Helper to safely parse numbers from strings like "16", "16px", "0.5px"
+                        fun getFloat(k: String, default: Float): Float {
+                            if (!valueObj.has(k)) return default
+                            val s = valueObj.get(k).asString
+                            return s.replace("px", "").toFloatOrNull() ?: default
+                        }
+
+                        val fontSize = getFloat("fontSize", 14f)
+                        val lineHeight = getFloat("lineHeight", 20f)
+                        val letterSpacing = getFloat("letterSpacing", 0f)
+                        
+                        val property = PropertySpec.builder(styleName, textStyleClassName)
+                            .initializer(
+                                "%T(\n  fontFamily = %T.Default,\n  fontSize = %L.%M,\n  lineHeight = %L.%M,\n  letterSpacing = %L.%M\n)",
+                                textStyleClassName,
+                                fontFamilyClassName,
+                                fontSize, spMember,
+                                lineHeight, spMember,
+                                letterSpacing, spMember
+                            )
+                            .build()
+
+                        typeFileSpec.addProperty(property)
+
+                    } catch (e: Exception) {
+                        println("⚠️ Error processing typography $key: ${e.message}")
                     }
-                    // =================================================================================
-                    // SPACING
-                    // =================================================================================
-                    "spacing" if valueElement.isJsonPrimitive -> {
-                        try {
-                            // Convert "One" -> "SpacingOne" or just "One"?
-                            // User asked to "do the same", implying simple mapping.
-                            // But usually "One" is too generic. "SpacingOne" is better?
-                            // The existing JSON keys are "One", "Two".
-                            // I will stick to the Key Name converted to PascalCase to match Color/Typography logic.
-                            // e.g. "One" -> "One".
+                }
+                // =================================================================================
+                // SPACING
+                // =================================================================================
+                else if (type == "spacing" && valueElement.isJsonPrimitive) {
+                    try {
+                         val spacingName = key.replaceFirstChar { it.uppercase() }
+                         val valueStr = valueElement.asString
+                         val valueFloat = valueStr.replace("px", "").toFloatOrNull() ?: 0f
+                         
+                         val property = PropertySpec.builder(spacingName, dpClassName)
+                            .initializer("%L.%M", valueFloat, dpMember)
+                            .build()
 
-                            val spacingName = key.replaceFirstChar { it.uppercase() }
-                            val valueStr = valueElement.asString
-                            val valueFloat = valueStr.replace("px", "").toFloatOrNull() ?: 0f
+                         spacingFileSpec.addProperty(property)
 
-                            val property = PropertySpec.builder(spacingName, dpClassName)
-                                .initializer("%L.%M", valueFloat, dpMember)
-                                .build()
-
-                            spacingFileSpec.addProperty(property)
-
-                        } catch (e: Exception) {
-                            println("⚠️ Error processing spacing $key: ${e.message}")
-                        }
+                    } catch (e: Exception) {
+                        println("⚠️ Error processing spacing $key: ${e.message}")
                     }
                 }
             }
