@@ -12,12 +12,16 @@ import com.squareup.kotlinpoet.MemberName
 import java.io.File
 import java.io.FileReader
 
+println("🚀 Starting Token Generation Script")
+println("📂 Working Directory: ${System.getProperty("user.dir")}")
+
 // 1. LOAD JSON
 val jsonFile = File("tokens.json")
 if (!jsonFile.exists()) {
-    println("Error: tokens.json not found in ${System.getProperty("user.dir")}")
+    println("❌ Error: tokens.json not found in ${System.getProperty("user.dir")}")
     System.exit(1)
 }
+println("✅ Found tokens.json")
 
 // 2. PARSE SAFELY
 val rootElement = JsonParser.parseReader(FileReader(jsonFile))
@@ -42,6 +46,7 @@ val spacingFileSpec = FileSpec.builder("com.adriano.designsystem.ui.theme", "Spa
 // Extract ONLY the "global" set
 if (rootObject.has("global")) {
     val globalSet = rootObject.getAsJsonObject("global")
+    println("🔍 Processing 'global' token set with ${globalSet.size()} entries...")
 
     for (key in globalSet.keySet()) {
         val tokenElement = globalSet.get(key)
@@ -139,13 +144,32 @@ if (rootObject.has("global")) {
         }
     }
 } else {
-    println("⚠️ Warning: 'global' token set not found in JSON.")
+    println("❌ Error: 'global' token set not found in JSON.")
+    System.exit(1)
 }
 
 // 4. WRITE TO FILES
 val outputDir = File("app/src/main/java")
-colorFileSpec.build().writeTo(outputDir)
-typeFileSpec.build().writeTo(outputDir)
-spacingFileSpec.build().writeTo(outputDir)
+if (!outputDir.exists()) {
+    println("⚠️ Output directory does not exist, creating: ${outputDir.absolutePath}")
+    outputDir.mkdirs()
+}
 
-println("✅ Success! Generated Color.kt, Type.kt, and Spacing.kt using KotlinPoet.")
+println("💾 Writing files to: ${outputDir.absolutePath}")
+
+try {
+    colorFileSpec.build().writeTo(outputDir)
+    println("   - Written Color.kt")
+    
+    typeFileSpec.build().writeTo(outputDir)
+    println("   - Written Type.kt")
+    
+    spacingFileSpec.build().writeTo(outputDir)
+    println("   - Written Spacing.kt")
+    
+    println("✅ Success! Generated Color.kt, Type.kt, and Spacing.kt using KotlinPoet.")
+} catch (e: Exception) {
+    println("❌ Error writing files: ${e.message}")
+    e.printStackTrace()
+    System.exit(1)
+}
