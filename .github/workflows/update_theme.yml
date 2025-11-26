@@ -39,9 +39,18 @@ jobs:
       - name: Generate Compose Code
         run: kotlin convert_tokens.main.kts
 
+      # DEBUG & STAGE
+      - name: Stage Changes
+        run: |
+          echo "Current status:"
+          git status
+          git add app/src/main/java/com/adriano/designsystem/ui/theme/*.kt
+          echo "Status after add:"
+          git status
+
       # COMMIT AND PUSH CHANGES
       - name: Commit and Push Changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "design: update compose theme"
-          file_pattern: "app/src/main/java/com/adriano/designsystem/ui/theme/*.kt"
+          # Removed file_pattern to rely on the manual git add above
