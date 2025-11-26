@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'tokens.json'
+  pull_request:
+    types: [ opened, synchronize ]
 
 # ADD THIS SECTION to enable the manual button
   workflow_dispatch:
@@ -15,14 +17,13 @@ on:
 
 jobs:
   update-theme:
+    # 🛑 ONLY RUN if the source branch starts with 'design/'
+    if: startsWith(github.head_ref, 'design_system')
+
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
-
-          # ADD THIS DEBUG STEP
-      - name: Debug File Structure
-        run: ls -R
 
       # INSTALL KOTLIN
       - name: Setup Kotlin
