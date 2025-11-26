@@ -19,11 +19,15 @@ jobs:
   update-theme:
     # 🛑 ONLY RUN if the source branch starts with 'design/'
     if: startsWith(github.head_ref, 'design_system')
+    permissions:
+      contents: write
 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
 
       # INSTALL KOTLIN
       - name: Setup Kotlin
@@ -33,15 +37,20 @@ jobs:
 
       # RUN THE SCRIPT
       - name: Generate Compose Code
-
         run: kotlin convert_tokens.main.kts
 
-      # CREATE PULL REQUEST
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+      # DEBUG & STAGE
+      - name: Stage Changes
+        run: |
+          echo "Current status:"
+          git status
+          git add app/src/main/java/com/adriano/designsystem/ui/theme/*.kt
+          echo "Status after add:"
+          git status
+
+      # COMMIT AND PUSH CHANGES
+      - name: Commit and Push Changes
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "design: update compose theme"
-          title: "🎨 Update Design Tokens"
-          body: "Auto-generated updates from Figma via Kotlin Script."
-          branch: "design-updates"
+          commit_message: "design: update compose theme"
+          # Removed file_pattern to rely on the manual git add above
